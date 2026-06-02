@@ -39,10 +39,20 @@ symb_dict = sd.symb_dict
 def replace_all(text: str, dic: Dict[str, str], ptrn: str = "") -> str:
     if ptrn and re.search(ptrn, text):
         for i, j in dic.items():
-            text = re.sub(i, j, text)
+            pat = i
+            flags = 0
+            if "(?i)" in pat:
+                pat = pat.replace("(?i)", "")
+                flags |= re.IGNORECASE
+            text = re.sub(pat, j, text, flags=flags)
     elif not ptrn:
         for i, j in dic.items():
-            text = re.sub(i, j, text)
+            pat = i
+            flags = 0
+            if "(?i)" in pat:
+                pat = pat.replace("(?i)", "")
+                flags |= re.IGNORECASE
+            text = re.sub(pat, j, text, flags=flags)
     return text
 
 def replace_abbreviations(sent: str, domain: str) -> str:
