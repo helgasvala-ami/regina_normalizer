@@ -17,3 +17,21 @@ env/
 venv/
 ENV/
 
+# Local virtualenvs
+.venv
+.venv*/
+.venv310/
+
+# Pytest / tooling
+.pytest_cache/
+.mypy_cache/
+
+# IDE
+.vscode/
+/.idea/
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+

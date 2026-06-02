@@ -1,0 +1,57 @@
+--- /var/folders/3j/w61rmg1d2bzg_ycyvt6yth700000gn/T/tmp.ikKZGZfVxp/original/regina_normalizer/abbr_functions.py	2026-06-02 10:01:48
++++ regina_normalizer/abbr_functions.py	2026-06-02 09:40:44
+@@ -1,6 +1,7 @@
++from __future__ import annotations
++
+ import re
+-import json
+-import os
++from typing import Dict, Any
+ 
+ from . import abbr_dict as abd 
+ from . import area_dict as ad
+@@ -17,7 +18,7 @@
+ from . import pre_help_dicts as phd
+ from . import symbols_dict as sd
+ 
+-direction_ptrn = "[SN]?V|N|[SN]?A|S"
++direction_ptrn = r"[SN]?V|N|[SN]?A|S"
+ 
+ pre_help_dict = phd.pre_help_dicts
+ abbr_dict = abd.abbr_dict
+@@ -35,13 +36,16 @@
+ symb_dict = sd.symb_dict
+ 
+ # replace words according to the appropriate dictionary 
+-def replace_all(text, dic, ptrn=""):
+-    if re.findall(ptrn, text):
++def replace_all(text: str, dic: Dict[str, str], ptrn: str = "") -> str:
++    if ptrn and re.search(ptrn, text):
+         for i, j in dic.items():
+             text = re.sub(i, j, text)
++    elif not ptrn:
++        for i, j in dic.items():
++            text = re.sub(i, j, text)
+     return text
+ 
+-def replace_abbreviations(sent, domain):
++def replace_abbreviations(sent: str, domain: str) -> str:
+     sent = replace_all(sent, direction_dict, direction_ptrn)
+     sent = replace_all(sent, pre_help_dict)
+     sent = replace_all(sent, denominator_dict, "\/")
+@@ -56,11 +60,11 @@
+     sent = replace_all(sent, period_dict, pd.period_ptrn)
+     sent = replace_all(sent, abbr_dict)
+     if domain == 'other':
+-        sent = re.sub('(\W|^)(\d{1,3})(\/)(0|\d{1}\d+)(\W|$)', '\g<1>\g<2> \g<3> \g<4>\g<5>', sent)
+-        sent = re.sub('(\W|^)(\d{3}\d+)(\/)(\d+)(\W|$)', '\g<1>\g<2> \g<3> \g<4>\g<5>', sent)
++        sent = re.sub(r'(\W|^)(\d{1,3})(\/)(0|\d{1}\d+)(\W|$)', r'\g<1>\g<2> \g<3> \g<4>\g<5>', sent)
++        sent = re.sub(r'(\W|^)(\d{3}\d+)(\/)(\d+)(\W|$)', r'\g<1>\g<2> \g<3> \g<4>\g<5>', sent)
+     if domain == 'sport':
+-        sent = re.sub('(W|^)(\d{2}\d+)(\/)(\d+)(\W|$)', '\g<1>\g<2> \g<3> \g<4>\g<5>', sent)
+-        sent = re.sub('(W|^)(\d+)(\/)(\d{2}\d+)(\W|$)', '\g<1>\g<2> \g<3> \g<4>\g<5>', sent)
++        sent = re.sub(r'(W|^)(\d{2}\d+)(\/)(\d+)(\W|$)', r'\g<1>\g<2> \g<3> \g<4>\g<5>', sent)
++        sent = re.sub(r'(W|^)(\d+)(\/)(\d{2}\d+)(\W|$)', r'\g<1>\g<2> \g<3> \g<4>\g<5>', sent)
+     return sent
+ 
+ 

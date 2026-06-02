@@ -1,15 +1,18 @@
+from __future__ import annotations
+
 import os
 import re
+from typing import List
 
 package_path = os.path.dirname(os.path.abspath(__file__))
 ABBR_FILE = os.path.join(package_path, 'abbreviations_general.txt')
 ABBR_NONENDING_FILE = os.path.join(package_path, 'abbreviations_nonending.txt')
 
-ALPHABETIC = '[A-Za-záéíóúýðþæöÁÉÍÓÚÝÐÞÆÖ]+'
-UPPER_CASE = '[A-ZÁÉÍÓÚÝÐÞÆÖ]'
-# we can't use \\w because it only takes ascii chars into account
-WORD_CHAR = '[A-Za-záéíóúýðþæöÁÉÍÓÚÝÐÞÆÖ\\d.µ]'
-EOS_SYMBOL = '[.:?!;)(]'
+ALPHABETIC = r'[A-Za-záéíóúýðþæöÁÉÍÓÚÝÐÞÆÖ]+'
+UPPER_CASE = r'[A-ZÁÉÍÓÚÝÐÞÆÖ]'
+# we can't use \w because it only takes ascii chars into account
+WORD_CHAR = r'[A-Za-záéíóúýðþæöÁÉÍÓÚÝÐÞÆÖ\d.µ]'
+EOS_SYMBOL = r'[.:?!;)(]'
 
 
 class Tokenizer:
@@ -19,11 +22,11 @@ class Tokenizer:
         self.abbreviations_non_ending = self.read_list(ABBR_NONENDING_FILE)
 
     @staticmethod
-    def read_list(filename: str) -> list:
-        with open(filename) as f:
+    def read_list(filename: str) -> List[str]:
+        with open(filename, encoding='utf-8') as f:
             return f.read().splitlines()
 
-    def detect_sentences(self, text: str) -> list:
+    def detect_sentences(self, text: str) -> List[str]:
         """
             Takes a cleaned text as input and returns a list of sentences
             as strings. A white space split on these strings gives a token list, where punctuation has been
@@ -53,7 +56,7 @@ class Tokenizer:
         self.finish_sentence(sentences, tmp_str, last_token)
         return sentences
 
-    def finish_sentence(self, sentences: list, tmp_string: str, last_token: str) -> None:
+    def finish_sentence(self, sentences: List[str], tmp_string: str, last_token: str) -> None:
         """ Check the content of 'tmp_str' and 'last_token' and finish the sentence contained in 'tmp_str'.
         'sentences' is the list of sentences already detected from the input text. After processing
         'tmp_str' and 'last_token' we create a new sentence string to add to 'sentences'
@@ -81,7 +84,7 @@ class Tokenizer:
             else:
                 sentences.append(tmp_string.strip())
 
-    def update_tmp_string(self, sentences: list, tmp_string: str, tokenized: str) -> str:
+    def update_tmp_string(self, sentences: List[str], tmp_string: str, tokenized: str) -> str:
         """ Append 'tokenized' to 'tmp_string', check if 'tokenized' represents an end of a sentence,
         if yes, create a new sentence from tmp_string and add to sentences. Return tmp_string, that
         might have been reset to an empty string if we had a full sentence."""
@@ -96,7 +99,7 @@ class Tokenizer:
             return tokenized
         return ''
 
-    def check_last_token(self, sentences: list, tmp_string: str, last_token: str, tokenized: str) -> str:
+    def check_last_token(self, sentences: List[str], tmp_string: str, last_token: str, tokenized: str) -> str:
         if last_token:
             if not self.is_full_stop_EOS(tokenized, last_token):
                 tmp_string = self.append_token(tmp_string, last_token)
@@ -144,9 +147,8 @@ class Tokenizer:
     def is_EOS(token: str) -> bool:
         """ Most EOS symbols are not as ambiguous like the dot, check for them here. The ':' is a matter of
         definition, we define it as EOS for now at least."""
-
-        return token.endswith(' ?') or token.endswith('? "') or token.endswith(' !') or token.endswith('! "') \
-               or token.endswith(' :') or token.endswith(' :)')
+        eos_endings = (' ?', '? "', ' !', '! "', ' :', ' :)')
+        return any(token.endswith(ending) for ending in eos_endings)
 
     def process_special_characters(self, token: str) -> str:
         """
